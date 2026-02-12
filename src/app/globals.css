@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&family=Inter:wght@200;300;400;500;600&family=Outfit:wght@200;300;400;500;600;700&display=swap');
+/* Fonts are loaded via next/font in layout.tsx */
 
 /* ═══════════════════════════════════════════════════
    DESIGN TOKENS
@@ -30,9 +30,9 @@
   --question-blush: #fda4af;
 
   /* Typography */
-  --font-display: 'Cormorant Garamond', Georgia, serif;
-  --font-body: 'Inter', -apple-system, sans-serif;
-  --font-accent: 'Outfit', sans-serif;
+  --font-display: var(--font-cormorant), Georgia, serif;
+  --font-body: var(--font-inter), -apple-system, sans-serif;
+  --font-accent: var(--font-outfit), sans-serif;
 
   /* Spacing */
   --section-padding: clamp(60px, 10vh, 160px);
@@ -83,6 +83,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+  touch-action: pan-y;
+  /* Prevent accidental horizontal blocks */
+  -webkit-overflow-scrolling: touch;
 }
 
 ::selection {
@@ -104,9 +107,35 @@ body {
 .ambient-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(140px);
-  opacity: 0.25;
+  filter: blur(80px);
+  opacity: 0.12;
   will-change: transform;
+  transform: translate3d(0, 0, 0);
+  /* Force GPU acceleration */
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .ambient-orb {
+    filter: blur(15px);
+    opacity: 0.04;
+    animation-duration: 45s !important;
+  }
+
+  .ambient-orb--1 {
+    width: 280px;
+    height: 280px;
+  }
+
+  .ambient-orb--2 {
+    width: 240px;
+    height: 240px;
+  }
+
+  .ambient-orb--3 {
+    width: 180px;
+    height: 180px;
+  }
 }
 
 .ambient-orb--1 {
@@ -251,6 +280,8 @@ body {
   width: 100%;
   max-width: var(--content-max);
   position: relative;
+  text-align: center;
+  /* Ensure all text inside is centered */
 }
 
 /* Act-specific backgrounds */
@@ -301,6 +332,8 @@ body {
   font-size: clamp(10px, 1.2vw, 13px);
   font-weight: 400;
   letter-spacing: 0.35em;
+  margin-right: -0.4em;
+  /* Compensate for centering */
   text-transform: uppercase;
   color: var(--glow);
   margin-bottom: 40px;
@@ -386,9 +419,10 @@ body {
   }
 
   50% {
-    transform: translate(-50%, -50%) scale(1.15);
+    transform: translate(-50%, -50%) scale(1.08);
+    /* Reduced scale factor for mobile stability */
     opacity: 0.15;
-    border-color: rgba(196, 181, 253, 0.25);
+    border-color: rgba(196, 181, 253, 0.2);
   }
 }
 
@@ -405,14 +439,17 @@ body {
 .presence__scroll-hint {
   position: absolute;
   bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: max-content;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   animation: fadeInUp 2s var(--ease-silk) 4s forwards;
   opacity: 0;
+  will-change: transform, opacity;
 }
 
 .scroll-line {
@@ -440,6 +477,8 @@ body {
   font-family: var(--font-accent);
   font-size: 10px;
   letter-spacing: 0.3em;
+  margin-right: -0.3em;
+  /* Compensate for letter-spacing to center properly */
   text-transform: uppercase;
   color: var(--glow);
 }
@@ -523,14 +562,24 @@ body {
 
 .ineffable__blur-overlay {
   position: absolute;
-  inset: -20px;
+  inset: -10px;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  background: rgba(5, 5, 8, 0.3);
+  background: rgba(5, 5, 8, 0.45);
   opacity: 1;
   transition: opacity 1.5s var(--ease-silk);
   pointer-events: none;
   border-radius: 8px;
+  transform: translateZ(0);
+}
+
+@media (max-width: 768px) {
+  .ineffable__blur-overlay {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(5, 5, 8, 0.9);
+    /* Opaque fade instead of blur on mobile */
+  }
 }
 
 .ineffable__fragment.revealed .ineffable__blur-overlay {
@@ -777,6 +826,8 @@ body {
   font-size: 14px;
   font-weight: 500;
   letter-spacing: 0.15em;
+  margin-right: -0.15em;
+  /* Compensate for centering */
   text-transform: uppercase;
   padding: 16px 48px;
   border: none;

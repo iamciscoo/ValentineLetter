@@ -10,7 +10,7 @@ function Particles() {
     const [particles, setParticles] = useState<any[]>([]);
 
     useEffect(() => {
-        const count = 40;
+        const count = typeof window !== "undefined" && window.innerWidth < 768 ? 10 : 40;
         const generated = Array.from({ length: count }, (_, i) => ({
             id: i,
             left: `${Math.random() * 100}%`,
@@ -73,13 +73,14 @@ function Reveal({
     const [isVisible, setIsVisible] = useState(false);
 
     useEffect(() => {
+        const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
                     setIsVisible(true);
                 }
             },
-            { threshold: 0.15, rootMargin: "0px 0px -60px 0px" }
+            { threshold: isMobile ? 0.05 : 0.15, rootMargin: "0px 0px -40px 0px" }
         );
         if (ref.current) observer.observe(ref.current);
         return () => observer.disconnect();
@@ -183,11 +184,11 @@ function BlurFragment({
     useEffect(() => {
         const observer = new IntersectionObserver(
             ([entry]) => {
-                if (entry.isIntersecting && entry.intersectionRatio > 0.5) {
+                if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
                     setRevealed(true);
                 }
             },
-            { threshold: [0, 0.25, 0.5, 0.75, 1] }
+            { threshold: [0, 0.4] }
         );
         if (ref.current) observer.observe(ref.current);
         return () => observer.disconnect();
@@ -299,9 +300,63 @@ function CelebrationParticles() {
 export default function Home() {
     const [showCelebration, setShowCelebration] = useState(false);
     const [expandedArtifact, setExpandedArtifact] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const audioRef = useRef<HTMLAudioElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const audioInitialized = useRef(false);
 
     const { scrollYProgress } = useScroll({ target: containerRef });
+
+    // Handle music initialization and browser autoplay policies
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio) return;
+
+        audio.volume = 0.2;
+        audio.preload = "none";
+
+        const startMusic = () => {
+            if (audioInitialized.current) return;
+
+            audio.play().then(() => {
+                setIsPlaying(true);
+                audioInitialized.current = true;
+                // Clean up ALL listeners
+                ["click", "touchstart", "mousedown", "keydown", "scroll"].forEach(e => {
+                    window.removeEventListener(e, startMusic);
+                });
+            }).catch(err => {
+                // Keep listeners if it failed somehow
+                console.log("Audio unlock failed, waiting for next interaction.");
+            });
+        };
+
+        // NEVER call audio.play() automatically on mount, it triggers the NotAllowedError.
+        // Instead, we wait for the very first interaction.
+        ["click", "touchstart", "mousedown", "keydown", "scroll"].forEach(e => {
+            window.addEventListener(e, startMusic, { passive: false });
+        });
+
+        return () => {
+            ["click", "touchstart", "mousedown", "keydown", "scroll"].forEach(e => {
+                window.removeEventListener(e, startMusic);
+            });
+        };
+    }, []);
+
+    const toggleMusic = (e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
+        if (!audioRef.current) return;
+
+        if (isPlaying) {
+            audioRef.current.pause();
+            setIsPlaying(false);
+        } else {
+            audioRef.current.play().then(() => {
+                setIsPlaying(true);
+            }).catch(err => console.error("Toggle failed:", err));
+        }
+    };
 
     /* Parallax values for presence act */
     const presenceY = useTransform(scrollYProgress, [0, 0.1], [0, -80]);
@@ -316,6 +371,42 @@ export default function Home() {
         <>
             <AmbientCanvas />
             <Particles />
+
+            <audio
+                ref={audioRef}
+                src="/love.mp3"
+                loop
+                playsInline
+                preload="none"
+            />
+
+            {/* Subtle Music Toggle */}
+            <motion.button
+                className="music-toggle"
+                onClick={toggleMusic}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                whileHover={{ opacity: 1, scale: 1.1 }}
+                style={{
+                    position: "fixed",
+                    bottom: "20px",
+                    right: "20px",
+                    zIndex: 1000,
+                    background: "rgba(255, 255, 255, 0.05)",
+                    border: "1px solid rgba(255, 255, 255, 0.1)",
+                    borderRadius: "50%",
+                    width: "40px",
+                    height: "40px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    color: "white",
+                    backdropFilter: "blur(4px)",
+                }}
+            >
+                {isPlaying ? "♪" : "×"}
+            </motion.button>
 
             <div className="journey" ref={containerRef}>
                 {/* ΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉΓòÉ
