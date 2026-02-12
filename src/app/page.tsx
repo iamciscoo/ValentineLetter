@@ -337,7 +337,7 @@ export default function Home() {
                             animate={{ opacity: 1 }}
                             transition={{ duration: 3, delay: 0.5 }}
                         >
-                            For Oprah
+                            ♡ For Oprah
                         </motion.h1>
 
                         <motion.p
@@ -832,14 +832,14 @@ export default function Home() {
                                 </Reveal>
                             </div>
 
-                            <Reveal delay={1.5}>
+                            <Reveal delay={0.5}>
                                 <h2 className="question__main" style={{ marginTop: "40px" }}>
                                     Will you be my{" "}
                                     <span className="question__highlight">love</span>?
                                 </h2>
                             </Reveal>
 
-                            <Reveal delay={1.8}>
+                            <Reveal delay={0.4}>
                                 <div className="question__response">
                                     <button
                                         className="question__btn question__btn--yes"
